@@ -1,6 +1,5 @@
 ---
 title: "IODS course project"
-author: Matias Topo
 output:
   html_document:
     theme: cosmo
