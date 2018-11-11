@@ -75,6 +75,7 @@ summary(my_model)
 Explanatory variable attitude is statistically significant on 1 % significance level (p-value 1.95e-09). 
 
 4.
+
 The coefficient of attitude is 3.5255 (values from summary). The coefficient describes that if the value of attitude increases by 1 (a student has more positive attitude towards studying statistics), her exam score is expected to be 3.5255 points higher. Attitude has a positive statistical relationship to the dependent variable (exam score).
 
 Multiple R-squared has a value of 0.1906 and Adjusted R-squared has a value of 0.1856. Both of these values are low. Thus, model does not account much of the variance in the data. However, low R-squared values do not indicate that the model is not adequate and it is common to have such low values in models, that attempt to predict human behavior. The statistically significant positive relationship between explanotary variable (attitude) and dependent variable (exam points) is the main finding here. The adjusted R-squared is almost the same as on the previous model with three variables, indicating that the fit of the model remains the same.
