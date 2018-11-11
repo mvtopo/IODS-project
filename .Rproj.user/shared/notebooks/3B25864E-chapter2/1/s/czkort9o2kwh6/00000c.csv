@@ -1,0 +1,2 @@
+"0","# a scatter plot of points versus attitude"
+"0","qplot(attitude, points, mapping = aes(col=gender), data = lrn14)  + geom_smooth(method = ""lm"")"
