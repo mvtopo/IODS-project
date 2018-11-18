@@ -12,10 +12,10 @@
     "path" : "~/GitHub/IODS-project/data/create_learning2014.R",
     "project_path" : "data/create_learning2014.R",
     "properties" : {
-        "cursorPosition" : "6,21",
+        "cursorPosition" : "55,20",
         "scrollLine" : "0"
     },
-    "relative_order" : 2,
+    "relative_order" : 1,
     "source_on_save" : false,
     "source_window" : "",
     "type" : "r_source"

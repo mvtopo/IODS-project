@@ -1,0 +1,4 @@
+"0","# initialize a plot of high_use and G3"
+"0","g3 <- ggplot(alc, aes(x = high_use, y = goout, col = sex))"
+"0","# define the plot as a boxplot and draw it"
+"0","g3 + geom_boxplot() + ylab(""going out"") + ggtitle(""Going out by alcohol consumption and sex"") "

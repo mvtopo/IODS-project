@@ -1,0 +1,3 @@
+"0","g2 <- ggplot(alc, aes(goout, fill = sex))"
+"0","# draw a bar plot of high_use by sex"
+"0","g2 + facet_wrap(""sex"") + geom_bar()"

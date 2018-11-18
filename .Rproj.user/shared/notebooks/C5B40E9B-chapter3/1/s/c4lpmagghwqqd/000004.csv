@@ -1,0 +1,2 @@
+"0","# define the plot as a boxplot and draw it"
+"0","g2 + geom_boxplot() + ggtitle(""Student absences by alcohol consumption and sex"")"

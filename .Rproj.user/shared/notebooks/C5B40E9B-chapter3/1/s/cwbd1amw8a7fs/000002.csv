@@ -1,0 +1,4 @@
+"0","# initialize a plot of 'high_use' versus 'probability' in 'alc'"
+"0","g <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))"
+"0","# define the geom as points and draw the plot"
+"0","g + geom_point()"

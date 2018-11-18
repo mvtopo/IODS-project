@@ -1,0 +1,2 @@
+"0","# initialise a plot of high_use and absences"
+"0","g2 <- ggplot(alc, aes(x = high_use, y = absences, col = sex))"

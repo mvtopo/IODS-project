@@ -1,0 +1,2 @@
+"0","g1 <- ggplot(data = alc, aes(x = alc_use, fill = sex))"
+"0","g1 + geom_bar() + ggtitle(""Alcohol use by sex"")"

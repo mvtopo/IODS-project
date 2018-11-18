@@ -1,0 +1,136 @@
+library("zoo")
+library(forecast)    # LOAD THE forecast PACKAGE
+library(car)         # LOAD THE car PACKAGE
+library(vars)
+library(urca) 
+dataset = read.table("inflation.txt",header=TRUE)
+
+#a)
+
+
+y = ts(dataset$infl, frequency = 4, start=c(1960,1), end = c(2006,4))
+auto.arima(y, ic="bic", d=0, max.p=6, max.q=6, seasonal=FALSE, trace=TRUE)  # BIC
+plot(y)
+#a) 
+acf(y)
+# not stationarity
+
+pacf(y)
+
+# AR(3)
+
+# Check the BIC
+# Set q = o (not a MA term)
+auto.arima(y, ic="bic", d=0, max.p=6, max.q=0, seasonal=FALSE, trace=TRUE)  # BIC
+auto.arima(y, ic="aic", d=0, max.p=6, max.q=0,seasonal= FALSE, trace=TRUE) # AIC
+# Both yield AR(3)
+
+# c)
+# Estimate the model:
+p = 3
+q = 0
+model = Arima(y, order=c(p,0,q), include.mean=TRUE, method="CSS-ML")
+summary(model)
+# Ljung Box:
+# DIAGNOSTIC CHECKS for AR 3:
+e = model$residuals    # COMPUTE RESIDUALS
+plot (e, type="l")
+Acf(e,6)
+Box.test(e, lag=5, type="Ljung-Box", fitdf=(p+q))    # LJUNG-BOX TEST
+
+# H0: no autocorrelation
+# p-value 0.32 < 0.05 --> adequate model
+
+adf2 = ur.df(y, type="trend", selectlags = "BIC")
+plot(adf2)
+
+
+# adf-testi:
+adf.test(y)/A2r
+# Tehtävä 6:
+# a)
+# Open data
+data <- read.table("TPdata.txt", header=TRUE)
+
+y = ts(data$PCR, frequency = 4, start= c(1970,1), end= c(2005,4))
+pcr <- log(y)
+pcr <- diff(pcr)
+
+# Select AR(p) with BIC:
+model <- auto.arima(pcr, ic="bic", d=0, max.p=6, max.q=0, seasonal=FALSE, trace=TRUE)  # BIC
+
+# AR(4)
+
+# b)
+model1 <- auto.arima(pcr, ic="bic", d=0, max.p = 6, max.q = 6, seasonal= FALSE, trace = TRUE)
+#ARMA(1,2)
+#Diagnostic checks
+# DIAGNOSTIC CHECKS
+p=model1$arma[1]
+q=model1$arma[2]
+acmax <- 6
+e = model1$residuals    # COMPUTE RESIDUALS
+plot (e, type="l")
+Acf(e,12)
+LB.model1=Box.test(e, lag=acmax, type="Ljung-Box", fitdf=(p + q))    # LJUNG-BOX TEST
+MCL.model1=Box.test(e^2, lag=acmax, type="Ljung-Box", fitdf=(p+q))  # MCLEOD-LI TEST
+LB.model1
+MCL.model1
+
+# c)
+# Impulse responses
+
+# IMPULSE RESPONSE FUNCTION
+p=model$arma[1]
+q=model$arma[2]
+
+max.lag = 36
+ar.coef=0
+ma.coef=0
+if (p>0) {ar.coef = model$coef[1:p]}
+if (q>0) {ma.coef = model$coef[(p+1):(p+q)]}
+IRF1 = c(1, ARMAtoMA(ar=ar.coef, ma=ma.coef, lag.max=max.lag))
+plot(seq(0,max.lag,1),IRF1, type="l", xlab="lag")
+
+# First plot ok
+
+p=model1$arma[1]
+q=model1$arma[2]
+
+max.lag = 36
+ar.coef=0
+ma.coef=0
+if (p>0) {ar.coef = model1$coef[1:p]}
+if (q>0) {ma.coef = model1$coef[(p+1):(p+q)]}
+IRF2 = c(1, ARMAtoMA(ar=ar.coef, ma=ma.coef, lag.max=max.lag))
+
+plot(seq(0,max.lag,1),IRF1, type="l",lty=1, xlab="lag")
+lines(seq(0,max.lag,1),IRF2, type="l",lty=2, xlab="lag")
+legend(1,legend=c("AR(p)", "ARMA(p,q)"),lty=1:2, cex=0.8)
+# AR(P) is less persistent
+
+# d) 
+# Forecast
+u <- read.table("TPdata.txt", header=TRUE)
+
+u = ts(u$PCR, frequency = 4, start= c(1970,1) )
+u = diff(log(u))
+
+
+# FORECASTING
+
+h = 12      # FORECAST HORIZON 
+f = forecast(model, h=h, level=0.9)
+print(f)
+plot(f)
+lines(u,lty=2, col="red") # depict the realised series in dashed lines
+
+
+ # ARMA(p,q) model
+h = 12      # FORECAST HORIZON 
+f = forecast(model1, h=h, level=0.9)
+print(f)
+plot(f)
+lines(u,lty=2, col="orange")
+
+
