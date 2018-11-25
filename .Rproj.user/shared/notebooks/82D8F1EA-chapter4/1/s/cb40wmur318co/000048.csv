@@ -1,0 +1,1 @@
+"0","pairs(boston_scaled[6:10], col = km$cluster)"

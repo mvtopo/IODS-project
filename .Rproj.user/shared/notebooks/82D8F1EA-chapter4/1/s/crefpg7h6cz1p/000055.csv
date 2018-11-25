@@ -1,0 +1,6 @@
+"0","data('Boston')"
+"0","# euclidean distance matrix"
+"0","# center and standardize variables"
+"0","boston_scaled <- scale(Boston)"
+"0","# summaries of the scaled variables"
+"0","summary(boston_scaled)"

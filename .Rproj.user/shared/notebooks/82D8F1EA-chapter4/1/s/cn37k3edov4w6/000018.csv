@@ -1,0 +1,1 @@
+"0","plot_ly(x = matrix_product$LD1, y = matrix_product$LD2, z = matrix_product$LD3, type= 'scatter3d', mode='markers', color= km$cluster[1:404])"

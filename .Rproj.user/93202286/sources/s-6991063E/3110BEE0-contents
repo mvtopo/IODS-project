@@ -1,0 +1,232 @@
+# Clustering and classification
+
+
+2.
+
+```{r}
+library(MASS)
+library(plotly)
+library(ggplot2)
+library(GGally)
+library(corrplot)
+library(tidyverse)
+data('Boston')
+names(Boston)
+
+dim(Boston)
+str(Boston)
+```
+
+The dataset contains housing values in suburbs of Boston, and other variables about that describe the area i.e. crime rate, accessibilty to radial railways and air quality. The data contains 506 observations and 14 variables. All variables are numbers, and only two of them are integers. 
+
+The meta text can be found [here][id].
+ 
+[id]:https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/Boston.html
+
+3. 
+
+```{r}
+summary(Boston)
+```
+Crime rate seems to variate a lot between different areas. Some areas do have a low proportion of non-retail business acres per town, so the town has separeted residental areas. Most of the housing is not located by the Charles River. Nitrogen oxides concentration doubles between the minmum and maximum, indicating that the air pollution is concentrated to some areas. 
+
+Segregation may be an issue here, since in some areas there are not many black people living in. However, the difference between first quater and third quater is low, so there are only very few areas where not many black people are living in.
+
+```{r}
+# calculate the correlation matrix and round it
+cor_matrix<-cor(Boston) 
+
+# print the correlation matrix
+cor_matrix %>% round(digits = 2)
+
+# visualize the correlation matrix
+corrplot(cor_matrix, method="circle", type = "upper", cl.pos="b", tl.pos="d", t1.cex=0.6)
+
+```
+
+Weighted mean of distances to five Boston employment centres is highly negatively correlated with proportion of owner-occupied units built prior to 1940, nitrogen oxides concentration and proportion of non-retail business acres per town. Old nabourhoods are typically residental areas. The air contains more nitrogen oxides in areas with lots of traffic, like in the active employment centers. Areas with non-retail businesses probably have less opportunities for employment, and these areas are more likely to be residental areas. 
+
+Median value of owner-occupied homes has a high negative correlation with  percentage of lower status people of the population.
+
+Index of accessibility to radial highways is highly positively correlated with full-value property-tax rate, indicating that properties close to highways are more expensive (higher value of the property equals higher tax).
+
+4.
+
+```{r}
+# center and standardize variables
+boston_scaled <- scale(Boston)
+# summaries of the scaled variables
+summary(boston_scaled)
+
+```
+
+Now the mean of the variables is scaled to zero. Now it's easier to see from i.e. variable crime that high crime rate is really consentrated to small area, since the minimum value and first quantiles is close to the mean, but the maximum value is very high. Segregation may be a problem in a couple of areas, since the minimum of variable black is quite far away from the mean, indicating that there are some residental areas with very few black people living in there. Some areas are quite far from the employment centres (dis max 3.9566).
+
+```{r}
+# From matrix to data frame
+boston_scaled <- as.data.frame(boston_scaled)
+
+# summary of the scaled crime rate
+summary(boston_scaled$crim)
+
+# create a quantile vector of crim and print it
+bins <- quantile(boston_scaled$crim)
+bins
+
+# create a categorical variable 'crime'
+crime <- cut(boston_scaled$crim, breaks = bins, include.lowest = TRUE, label=c("low", "med_low", "med_high", "high"))
+
+# look at the table of the new factor crime
+table(crime)
+
+# remove original crim from the dataset
+boston_scaled <- dplyr::select(boston_scaled, -crim)
+
+# add the new categorical value to scaled data
+boston_scaled <- data.frame(boston_scaled, crime)
+```
+
+Now the crime rate is split to four quantiles.
+I Split the data to training (80% of the data) and test sets (20 % of the data) and removed the original crime rate variable, as instructed in exercise 6.
+
+```{r}
+# number of rows in the Boston dataset 
+n <- nrow(boston_scaled)
+
+# choose randomly 80% of the rows
+ind <- sample(n,  size = n * 0.8)
+
+# create train set
+train <- boston_scaled[ind,]
+
+# create test set 
+test <- boston_scaled[-ind,]
+
+# save the correct classes from test data
+correct_classes <- test$crime
+
+# remove the crime variable from test data
+test <- dplyr::select(test, -crime)
+```
+
+5.
+
+```{r}
+# linear discriminant analysis
+lda.fit <- lda(crime ~ ., data = train)
+
+# print the lda.fit object
+lda.fit
+```
+
+```{r}
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "orange", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+
+# target classes as numeric
+classes <- as.numeric(train$crime)
+
+# plot the lda results
+plot(lda.fit, dimen = 2, col = classes, pch = classes)
+lda.arrows(lda.fit, myscale = 1)
+```
+
+Two clusters, that are individually linear. However, together these datasets would make the linearity look quite different. High crime is consentrated to one cluster, and low rates to other cluster.
+
+6. 
+I saved the crime categories from the test set and then removed the categorical crime variable from the test dataset earlier, in part 4.
+
+```{r}
+# predict classes with test data
+lda.pred <- predict(lda.fit, newdata = test)
+
+# cross tabulate the results
+table(correct = correct_classes, predicted = lda.pred$class)
+```
+
+The model seems to predict very well high crime rate, only predicting once high when the real value was not high. Similarly, with medium high crime rate, the model predicts 15 times medium high, 3 times medium low and once low. The model failed to predict four times medium high, but succeeded fifteen times.
+
+With true value medium low, the model predicts less than 40 % correctly. With low crime rate, the model fails to predict correctly roughly 30 % of the true values. However, the failed predictions usually indicated low or medium low crime rate. Thus, the model seems to be good at predicting high crime rate and medium high crime rate, but it fails predicting two lowest quantiles of crime rates.
+
+7.
+
+Open the data again and standardize it again
+
+```{r}
+data('Boston')
+# euclidean distance matrix
+
+# center and standardize variables
+boston_scaled <- scale(Boston)
+# summaries of the scaled variables
+summary(boston_scaled)
+```
+
+Calculate the distance between observations using Euclidean distance matrix and Manhattan distance matrix:
+
+```{r}
+# euclidean distance matrix
+dist_eu <- dist(boston_scaled)
+
+# look at the summary of the distances
+summary(dist_eu)
+
+# manhattan distance matrix
+dist_man <- dist(boston_scaled, method = 'manhattan')
+
+# look at the summary of the distances
+summary(dist_man)
+
+```
+
+Euclidian distance would be a good measure for distance, since it's often used for scaled data.
+
+```{r}
+boston_scaled <- as.data.frame(boston_scaled)
+
+km <-kmeans(boston_scaled, centers = 2)
+
+# plot the Boston dataset with clusters
+pairs(boston_scaled[1:7], col= km$cluster)
+pairs(boston_scaled[6:10], col = km$cluster)
+pairs(boston_scaled[10:14], col = km$cluster)
+```
+
+I compared the plots with different numbers of clusters. It would seem reasonable to use two or three clusters, and I ended up using two since the clusters are this way very clear on the plots.
+
+Crime rate is very often clustered to two clusters, when looking at the first plot i.e. proportion of residential land zoned for lots and proportion of non-retail business acres per town. Crimes are centered to areas with low proportion of residential land zoned for lots. Areas with high proportion of non-retail business acres per town have high variation in crime rates, but overall these areas have a higher crime rate.
+
+Super bonus:
+
+```{r}
+model_predictors <- dplyr::select(train, -crime)
+
+# check the dimensions
+dim(model_predictors)
+dim(lda.fit$scaling)
+
+# matrix multiplication
+matrix_product <- as.matrix(model_predictors) %*% lda.fit$scaling
+matrix_product <- as.data.frame(matrix_product)
+```
+
+
+```{r}
+plot_ly(x = matrix_product$LD1, y = matrix_product$LD2, z = matrix_product$LD3, type= 'scatter3d', mode='markers', color= train$crime)
+```
+
+Here the color is defined by the crime classes.
+
+```{r}
+
+plot_ly(x = matrix_product$LD1, y = matrix_product$LD2, z = matrix_product$LD3, type= 'scatter3d', mode='markers', color= km$cluster[1:404])
+
+```
+
+The second plot doesn't look as I expected it to. I thought there would be two clusters, as how one can see by eye. Now the clustering seems very random. From the first plot we can see, that high crime rates are clearly clustered away from others, indicating that areas with high crime rates have different charasteristics from other areas.

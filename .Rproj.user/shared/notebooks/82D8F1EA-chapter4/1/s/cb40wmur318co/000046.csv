@@ -1,0 +1,4 @@
+"0","boston_scaled <- as.data.frame(boston_scaled)"
+"0","km <-kmeans(boston_scaled, centers = 2)"
+"0","# plot the Boston dataset with clusters"
+"0","pairs(boston_scaled[1:7], col= km$cluster)"
