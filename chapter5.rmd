@@ -1,0 +1,125 @@
+# Dimensionality reduction techniques
+
+```{r}
+library(ggplot2)
+library(GGally)
+library(dplyr)
+library(corrplot)
+```
+
+## Overview of the data
+
+```{r} 
+human <- read.table("human.txt", header = TRUE)
+summary(human)
+str(human)
+dim(human)
+
+```
+
+The data contains eight variables and 155 rows. 
+
+The dataset is a combined from a data of Human Development index and Gender Inequality index. These datasets are from United Nations Development Programme’s Human Development reports.
+
+See the datapage for further information [here][id].
+
+[http://hdr.undp.org/en/content/human-development-index-hdi][id]
+
+Technical notes can be found [here][id].
+
+[http://hdr.undp.org/sites/default/files/hdr2015_technical_notes.pdf][id]
+
+
+
+```{r}
+ggpairs(human)
+```
+
+
+```{r}
+cor(human) %>% corrplot
+```
+
+## PCA on non-standardized data
+
+```{r}
+# Mean again zero. Check how affects the variance
+# perform principal component analysis (with the SVD method)
+pca_human <- prcomp(human)
+
+biplot(pca_human, choices = 1:2, cex = c(0.6, 1), col = c("grey40", "deeppink2"))
+```
+
+
+## Standardize variables
+
+```{r}
+human_std <- scale(human)
+
+pca_human <- prcomp(human_std)
+
+
+
+# rounded percentages of variance captured by each PC
+pca_pr <- round(100*s$importance[2,], digits = 1) 
+
+# print out the percentages of variance
+pca_pr
+
+# create object pc_lab to be used as axis labels
+pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
+
+# draw a biplot
+biplot(pca_human, cex = c(0.8, 1), col = c("grey40", "deeppink2"), xlab = pc_lab[1], ylab = pc_lab[2])
+
+```
+
+```{r}
+
+```
+
+## Interpertation
+
+## Tea drinkers
+
+```{r}
+library(FactoMineR)
+library(ggplot2)
+library(tidyr)
+library(stringr)
+data(tea)
+
+# column names to keep in the dataset
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
+
+# select the 'keep_columns' to create a new dataset
+tea_time <- select(tea, one_of(keep_columns))
+
+# look at the summaries and structure of the data
+summary(tea_time)
+str(tea_time)
+
+# visualize the dataset
+gather(tea_time) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+summary(tea_time)
+dim(tea_time)
+str(tea_time)
+```
+
+```{r}
+# multiple correspondence analysis
+mca <- MCA(tea_time, graph = FALSE)
+
+# summary of the model
+summary(mca)
+
+# visualize MCA
+plot(mca, invisible=c("ind"), habillage = "quali")
+```
+
+
+
+```{r}
+plotellipses(mca, keepvar=(1:5))
+```
+
