@@ -1,0 +1,2 @@
+"0","# visualize MCA"
+"0","plot(mca, invisible=c(""ind""), habillage = ""quali"")"
