@@ -1,0 +1,18 @@
+"0","# Create a summary data by treatment groups and subject with mean as the summary variable (ignoring baseline week 1)."
+"0","RATSL64S <- RATSL %>%"
+"0","  filter(Time > 1) %>%"
+"0","  group_by(Group, ID) %>%"
+"0","  summarise(average=mean(Weight)) %>%"
+"0","  ungroup()"
+"0","# Glimpse the data"
+"0","glimpse(RATSL64S)"
+"1","Observations: 16
+"
+"1","Variables: 3
+"
+"1","$ Group   <fctr> 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3
+"
+"1","$ ID      <fctr> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
+"
+"1","$ average <dbl> 263.2, 238.9, 261.7, 267.2, 270.9, 276.2, 274.6, 267.5, 443.9, 45...
+"

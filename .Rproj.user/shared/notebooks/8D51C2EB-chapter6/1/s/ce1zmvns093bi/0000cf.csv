@@ -1,0 +1,8 @@
+"0","BPRSL$subject <- factor(BPRSL$subject)"
+"0","BPRSL$group <- factor(BPRSL$treatment)"
+"0","ggplot(BPRSL, aes(x = week, y= bprs, linetype = subject, col = treatment)) +"
+"0","  geom_line() +"
+"0","   scale_linetype_manual(values = rep(1:10, times=4)) +"
+"0"," "
+"0","    theme(legend.position = ""none"") +"
+"0","    scale_y_continuous(limits = c(min(BPRSL$bprs), max(BPRSL$bprs)))"

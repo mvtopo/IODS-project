@@ -1,0 +1,6 @@
+"0","ggplot(RATSL, aes(x = Time, y = Weight, linetype = ID)) +"
+"0","  geom_line() +"
+"0","  scale_linetype_manual(values = rep(1:10, times=4)) +"
+"0","  facet_grid(. ~ Group, labeller = label_both) +"
+"0","  theme(legend.position = ""none"") + "
+"0","  scale_y_continuous(limits = c(min(RATSL$Weight), max(RATSL$Weight)))"

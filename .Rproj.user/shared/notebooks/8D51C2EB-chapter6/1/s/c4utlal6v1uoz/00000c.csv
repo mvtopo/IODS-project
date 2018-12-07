@@ -1,0 +1,5 @@
+"0","# Draw a boxplot of the mean versus treatment"
+"0","ggplot(RATSL64S, aes(x = Group, y = average)) +"
+"0","  geom_boxplot() +"
+"0","  stat_summary(fun.y = ""mean"", geom = ""point"", shape=23, size=4, fill = ""white"") +"
+"0","  scale_y_continuous(name = ""mean(Weight), periods 8-64"")"

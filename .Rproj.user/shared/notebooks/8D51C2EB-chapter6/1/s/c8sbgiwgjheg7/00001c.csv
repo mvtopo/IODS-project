@@ -1,0 +1,5 @@
+"0","RATSL64SF <- RATSL64S %>% filter(average < 580, average > 240, average != 495.2)"
+"0","ggplot(RATSL64SF, aes(x = Group, y = average)) +"
+"0","  geom_boxplot() +"
+"0","  stat_summary(fun.y = ""mean"", geom = ""point"", shape=23, size=4, fill = ""white"") +"
+"0","  scale_y_continuous(name = ""mean(Weight), periods 8-64"")"

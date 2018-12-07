@@ -1,0 +1,16 @@
+"0","BPRSL <- read.table(""BPRSL.txt"", header = TRUE)"
+"0","glimpse(BPRSL)"
+"1","Observations: 360
+"
+"1","Variables: 5
+"
+"1","$ treatment <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, ...
+"
+"1","$ subject   <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, ...
+"
+"1","$ weeks     <fctr> week0, week0, week0, week0, week0, week0, week0, week0, week0,...
+"
+"1","$ bprs      <int> 42, 58, 54, 55, 72, 48, 71, 30, 41, 57, 30, 55, 36, 38, 66, 41,...
+"
+"1","$ week      <int> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...
+"

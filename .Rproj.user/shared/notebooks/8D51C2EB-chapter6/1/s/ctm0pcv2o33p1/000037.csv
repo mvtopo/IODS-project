@@ -1,0 +1,29 @@
+"0","# Standardise the variable bprs"
+"0","RATSL <- RATSL %>%"
+"0","  group_by(Time) %>%"
+"0","  mutate(stdWeight = ((Weight - mean(Weight))/sd(Weight))) %>%"
+"0","  ungroup()"
+"0","# Glimpse the data"
+"0","glimpse(RATSL)"
+"1","Observations: 176
+"
+"1","Variables: 6
+"
+"1","$ ID        <fctr> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1, 2, 3...
+"
+"1","$ Group     <fctr> 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 1, 1,...
+"
+"1","$ WD        <fctr> WD1, WD1, WD1, WD1, WD1, WD1, WD1, WD1, WD1, WD1, WD1, WD1, WD...
+"
+"1","$ Weight    <int> 240, 225, 245, 260, 255, 260, 275, 245, 410, 405, 445, 555, 470...
+"
+"1","$ Time      <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 8, 8, 8, 8, 8, ...
+"
+"1","$ stdWeight <dbl> -1.0011429, -1.1203857, -0.9613953, -0.8421525, -0.8819001, -0....
+"
+"0","# Plot again with the standardised bprs"
+"0","ggplot(RATSL, aes(x = Time, y = stdWeight, linetype = ID)) +"
+"0","  geom_line() +"
+"0","  scale_linetype_manual(values = rep(1:10, times=4)) +"
+"0","  facet_grid(. ~ Group, labeller = label_both) +"
+"0","  scale_y_continuous(name = ""standardized weight"")"
