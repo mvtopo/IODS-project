@@ -40,11 +40,11 @@ Technical notes can be found [here][id].
 
 [id]:http://hdr.undp.org/sites/default/files/hdr2015_technical_notes.pdf
 
-
-
 ```{r}
 ggpairs(human)
 ```
+
+
 
 
 ```{r}

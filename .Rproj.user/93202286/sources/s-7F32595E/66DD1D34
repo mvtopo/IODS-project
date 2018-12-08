@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1543577926447.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3855424916",
+    "id" : "66DD1D34",
+    "lastKnownWriteTime" : 1544268810,
+    "last_content_update" : 1544268854582,
+    "path" : "~/GitHub/IODS-project/chapter5.rmd",
+    "project_path" : "chapter5.rmd",
+    "properties" : {
+        "cursorPosition" : "46,0",
+        "scrollLine" : "36",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

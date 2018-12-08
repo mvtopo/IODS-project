@@ -1,0 +1,174 @@
+# Dimensionality reduction techniques
+
+```{r}
+library(ggplot2)
+library(GGally)
+library(dplyr)
+library(corrplot)
+```
+
+### Overview of the data
+
+```{r} 
+human <- read.table("human.txt", header = TRUE)
+summary(human)
+str(human)
+dim(human)
+
+```
+
+The data contains eight variables and 155 rows. 
+
+The dataset is a combined from a data of Human Development index and Gender Inequality index. These datasets are from United Nations Development Programme’s Human Development reports.
+
+The variables correspond to:
+
+- se.ratio: ratio of females and males with at least secondary education
+- LFPR.ratio: ratio of females and males in the labor force
+- Expected.Education: expected years of education
+- Life.Expectancy: life expectancy at birth
+- GNI.cap: Gross national income per capita
+- MMR: maternal mortality ratio
+- ABR: adolescent birth ratio
+- PR: Percent Representation in Parliament
+
+See the datapage for further information [here][id].
+
+[id]:http://hdr.undp.org/en/content/human-development-index-hdi
+
+Technical notes can be found [here][id].
+
+[id]:http://hdr.undp.org/sites/default/files/hdr2015_technical_notes.pdf
+
+```{r}
+ggpairs(human)
+```
+
+
+
+
+```{r}
+cor(human) %>% corrplot
+```
+Maternal mortality ratio is positively correlated with adolescent birth ratio, indicating that young mothers face risks when giving birth.  Expected education and maternal mortality rate have a high negative correlation. Expected education and life expancy are also highly positively correlated.  Expected education and adolescent birth ratio are highly negatively correlated. Life expancy is negatively correlated with maternal mortality ratio and adolescent birth ratio. It would be important to study, whether education has a negative causal effect on adolescent birth ratio. 
+
+- se.ratio: ratio of females and males with at least secondary education
+- LFPR.ratio: ratio of females and males in the labor force
+- Expected.Education: expected years of education
+- Life.Expectancy: life expectancy at birth
+- GNI.cap: Gross national income per capita
+- MMR: maternal mortality ratio
+- ABR: adolescent birth ratio
+- PR: Percent Representation in Parliament
+
+### PCA on non-standardized data
+
+```{r}
+# Mean again zero. Check how affects the variance
+# perform principal component analysis (with the SVD method)
+pca_human <- prcomp(human)
+
+biplot(pca_human, choices = 1:2, cex = c(0.6, 1), col = c("grey40", "deeppink2"))
+```
+
+If the data is not standarized, one principal component would explain alone the variotion on the data. However, this graph remains uninformative and not useful for interpretation.
+
+
+### Standardize variables
+
+```{r}
+
+human_std <- scale(human)
+
+pca_human <- prcomp(human_std)
+
+s <- summary(pca_human)
+
+# rounded percentages of variance captured by each PC
+pca_pr <- round(100*s$importance[2,], digits = 1) 
+
+# print out the percentages of variance
+pca_pr
+
+# create object pc_lab to be used as axis labels
+pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
+
+# draw a biplot
+biplot(pca_human, cex = c(0.8, 1), col = c("grey40", "deeppink2"), xlab = pc_lab[1], ylab = pc_lab[2], sub = "The dimensionality of human development reduced to two principal components (PC). ")
+
+```
+
+First PC captures more than 50% of the variance of the original eight variables. 
+
+
+### Interpertation
+
+Ratio of females and males in the labor force is almost orthogonal to all variables excluding percent repsentation in parliament, indicating that ratio of females and males in the labor force has very low correlation with these variables. Same applies to percetage of representation in parliament. 
+
+Maternal mortality ratio is positively correlated with adolesecent birt ratio, since arrows in the plot point at same direction. These variables are highly negatively correlated to expected years of education, gross national income per capita, ratio of females and males with at least secondary education and life expectancy at birth. These last four variables are positively correlated between each other.
+
+All arrows in the plot are quite long, indicating that each variable has non-zero standard deviations. Percent representation in parliament and ratio of females and males in the labor force contributes to the second principal axis (PC2), since these arrows do point closely to same direction as the PC2-axis. Thus, rest of the variables contribute to the first principal axis (PC1). Therefore, the PC2 axis can be interpreted as how much females participate in parliment representation and to labor force. PC1 axis is trickier to interpret, since more variables are related to it. It describes the socio-economical conditions of women in a country. Low values in PC1 axis indicates good conditions for women and high values the opposite. High values in PC2 implies that females a large portion of females participate to labor force and are represented in parliament.
+
+For example, Nordic countries in top-right corner of the plot have low values in PC1-axis and high values PC2-axis, indicating good socio-economical conditions and high participation rate of females to labour force and parliament. I.e. Sudan, Mauritania and Afganistan are the opposite: these countires have high values for PC1 axis and low values for  PC2 axis, indicating worse conditions for females, if compared to Nordic countries.
+
+### Tea drinkers
+
+300 consumers were interviewed for the data. The data contains 300 observations and 36 variables. Consumers answered questions related to their tea consumption preferences, where they buy it and when they consume it. They answered questions related to their background i.e. sex, age and questions related to socio-economic background. The data is downloaded from the FactoMineR package for R. More information can be found [here][id].
+
+I selected columns "Tea", "How", "how", "sugar", "where" and "lunch" for the analysis.
+
+[id]: http://factominer.free.fr/index.html
+
+
+```{r}
+library(FactoMineR)
+library(ggplot2)
+library(tidyr)
+library(stringr)
+data(tea)
+
+# column names to keep in the dataset
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
+
+# select the 'keep_columns' to create a new dataset
+tea_time <- select(tea, one_of(keep_columns))
+
+# look at the summaries and structure of the data
+summary(tea_time)
+str(tea_time)
+
+
+# visualize the dataset
+gather(tea_time) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+summary(tea_time)
+
+```
+
+Most of the tea is consumed using a tea bag. Usually no milk or lemon is added to the tea. Most popular tea type is Earl Grey, and secondary choice is black tea. Only few people consume green tea. Half add sugar to tea. Usually, the tea is bought from chain store.
+
+```{r}
+# multiple correspondence analysis
+mca <- MCA(tea_time, graph = FALSE)
+
+# summary of the model
+summary(mca)
+```
+
+For dimension 1, the vtest value is lower than 1.96 for categories alone and other, indicating that these categories are not significantly different from zero. For dimension 2, black tea test value is lower than 1.96 in absolute value. Thus, for dimension 2, black tea is not significantly different from zero.
+
+```{r}
+
+
+# visualize MCA
+plot(mca, invisible=c("ind"), habillage = "quali")
+```
+
+The distance between variable categories gives a measure of their similarity. Dim 1 explains 15,24 % of variation of the variables, and Dim 2 explain 14.23 % of the variation. These dimensions do not explain much of the variation, and the dimensions explain almost equally as much variation as the other dimension on the plot. 
+
+Tea shops and upackaged tea are closely related. Tea bags are closely related to chain stores. Tea bags + unpackeged tea together are related to chain stores. Green tea is different from the other categories. Milk and sugar seem to be added often to Earl Grey, and black tea is often consumed without sugar. 
+
+```{r}
+plotellipses(mca, keepvar=(1:5))
+```
+
+With the confidence ellipses, we can see that the confidence ellipses are not large. The confidence ellipses are separated from each other, so the different populations on the plot are distinct.

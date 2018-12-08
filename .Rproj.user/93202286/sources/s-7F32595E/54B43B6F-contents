@@ -1,0 +1,532 @@
+# Logistic regression:
+
+```{r}
+library(tidyr); library(dplyr); library(ggplot2); library(GGally)
+```
+
+
+2. Open data: 
+
+```{r}
+alc <-  read.table("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/alc.txt", sep= ",", header= TRUE)
+```
+
+Take a look of the data:
+
+```{r}
+names(alc)
+dim(alc)
+```
+
+The data contains 35 variables and 382 observations. The data measures secondary education achievements and alcohol consumption in two Portugese schools. The data is combined from two questionares: one about education achievements, and another about education achievements. The observations are combined with factors that are common in both data sets, for identifying the relationship between education achievements and alcohol consumption.
+
+The meta text can be found [here][id].
+ 
+[id]:https://archive.ics.uci.edu/ml/datasets/Student+Performance
+
+4.
+Let's look at the data for choosing four variables to study the relationships between high/low alcohol consumption.
+
+```{r}
+gather(alc) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar()
+
+```
+
+I chose a list of variables, that I want to consider
+
+- absences
+- sex
+- goout
+- failures
+- health
+- G3
+- famrel
+
+```{r}
+cor(alc$high_use, as.numeric(alc$sex))
+```
+
+
+Sex is probably correlated with alchol consumption. I would assume that males drink more than females. Correlation is 0.2 between high use and sex.
+
+
+```{r}
+cor(alc$high_use, alc$goout)
+```
+
+Going out may also increase the probability of drinking, and it's highly correlated with high use (0.35). I would guess, that there is a causal relationship.
+
+However, I should not use failures with absences, since these two are not independent (absences may cause failures). I will also remove health, since bad health may be caused by drinking. 
+
+```{r}
+cor(alc$high_use, alc$G3)
+cor(alc$high_use, alc$absences)
+```
+
+
+So I end up with a list:
+- absences (positive correlation with alcohol consumption)
+- sex (positive correlation for males)
+- going out ( positive correlation 0.22 for high use )
+- G3 (negative correlation -0.03 to high use) 
+
+3.
+
+```{r}
+g1 <- ggplot(data = alc, aes(x = alc_use, fill = sex))
+g1 + geom_bar() + ggtitle("Alcohol use by sex")
+```
+
+Higher alcohol use is clearly more common for males.
+
+```{r}
+g2 <- ggplot(alc, aes(goout, fill = sex))
+
+# draw a bar plot of high_use by sex
+g2 + facet_wrap("sex") + geom_bar()
+```
+
+There's no big difference of going out between sexes.It seems that there's more males who go out often than females. On average, there doesn't seem to be a big difference.
+
+```{r}
+# initialize a plot of high_use and G3
+g3 <- ggplot(alc, aes(x = high_use, y = goout, col = sex))
+
+# define the plot as a boxplot and draw it
+g3 + geom_boxplot() + ylab("going out") + ggtitle("Going out by alcohol consumption and sex") 
+```
+
+Going out clearly correlates positively with high use.
+
+```{r}
+# initialize a plot of high_use and G3
+g1 <- ggplot(alc, aes(x = high_use, y = G3, col = sex))
+
+# define the plot as a boxplot and draw it
+g1 + geom_boxplot() + ylab("grade") + ggtitle("Grades by alcohol consumption and sex")
+
+# initialise a plot of high_use and absences
+g2 <- ggplot(alc, aes(x = high_use, y = absences, col = sex))
+
+
+```
+
+For males, high use of alcohol seems to have a negative effect on grade, but for females the effect is very small.
+
+```{r}
+# define the plot as a boxplot and draw it
+g2 + geom_boxplot() + ggtitle("Student absences by alcohol consumption and sex")
+
+```
+
+High use of alcohol is clearly correlated with absences.
+
+The boxplots support all the hypothesis I made previously about the relationships (correlations). However, it's not possible to draw conclusions about causality from these descriptive plots.
+
+5. 
+
+## Logistic regression (high / low alcohol consumption)
+
+```{r}
+m <- glm(high_use ~ famrel + goout + absences + sex, data = alc, family = "binomial")
+
+# print out a summary of the model
+summary(m)
+
+# print out the coefficients of the model
+coef(m)
+
+```
+
+To find the most parsimonious model, I use the same approach as Vehkalahti, Kimmo & Everitt, Brian S. and therefore I remove one variable at time from the model, and select the model with lowest AIC. ((2019, not yet published, see course materials) Multivariate Analysis for the Behavioral Sciences, 2nd Edition. Chapman and Hall/CRC, Boca Raton, Florida.).
+
+First, I remove sex:
+
+```{r}
+
+m <- glm(high_use ~ famrel + goout + absences, data = alc, family = "binomial")
+
+# print out a summary of the model
+summary(m)
+
+# print out the coefficients of the model
+coef(m)
+
+```
+
+Second, I remove absences:
+
+```{r}
+m <- glm(high_use ~ famrel + goout + sex, data = alc, family = "binomial")
+
+# print out a summary of the model
+summary(m)
+
+# print out the coefficients of the model
+coef(m)
+
+```
+
+Third, I remove goout:
+
+```{r}
+m <- glm(high_use ~ famrel + absences + sex, data = alc, family = "binomial")
+
+# print out a summary of the model
+summary(m)
+
+# print out the coefficients of the model
+coef(m)
+
+```
+
+Fourth, I remove family relationships:
+
+```{r}
+m <- glm(high_use ~ goout + absences + sex, data = alc, family = "binomial")
+
+# print out a summary of the model
+summary(m)
+
+# print out the coefficients of the model
+coef(m)
+
+```
+
+The AICs are
+- 381.08
+- 396.31
+- 395.54
+- 427.25
+- 389.44
+
+The original logistic regression model should be selected since it has the lowest value for AIC. Thus, there is no need to remove variables from the logistic regression model. This model should be the most parsimonious model that describes the data in adequate way.
+
+```{r}
+
+
+# find the model with glm()
+m <- glm(high_use ~ famrel + goout + absences + sex, data = alc, family = "binomial")
+
+# compute odds ratios (OR)
+OR <- coef(m) %>% exp
+
+# compute confidence intervals (CI)
+
+CI <- confint(m) %>% exp
+# print out the odds ratios with their confidence intervals
+cbind(OR, CI)
+```
+
+Odds ratios of going out, absences and sex male are above one. This implies that these variables are positively assosiated with high use of alcohol. On the other hand, good family relationships is negatively assosiated with high use of alcohol.
+
+6.
+
+```{r}
+# fit the model
+m <- glm(high_use ~ famrel + goout + absences + sex, data = alc, family = "binomial")
+
+# predict() the probability of high_use
+probabilities <- predict(m, type = "response")
+
+# add the predicted probabilities to 'alc'
+alc <- mutate(alc, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = probability > 0.5)
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+summary(alc$high_use)
+```
+
+According to the table, the model predicts alcohol consumption that is not high right for 254 individuals, when the true value is 270.The model clearly has a weakness with predicting high alcohol consumption, since the model is only able to predict 53 individuals with truely high alcohol consumption, while the true value is 112. 
+
+```{r}
+# initialize a plot of 'high_use' versus 'probability' in 'alc'
+g <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))
+
+# define the geom as points and draw the plot
+g + geom_point()
+
+```
+
+The plot visualizes the previous finding: The model is good at predicting individuals, who have low alcohol consumption, but it performs worse predicting high alcohol consumption.
+
+```{r}
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction) %>% prop.table %>% addmargins
+```
+
+In total, the model predicts 75 individuals wrong (roughly 20 % of the sample). The above table is consistent with the table shown before the plot, but now the same information is given in percentages. According to the prediction, 81,2% of individuals are not high users of alcohol and 18 % are high users. In the sample, 70% are not high users of alcohol, and 29 % are high users. There is a 10 percentage point difference in the number of high alcohol consumers in the sample and the prediction.
+
+The model performs much better than guessing in the case of predicting low alcohol consumption. However, individuals with high alcohol consumption the model performs poorly, and it is only slightly better than quessing.
+
+```{r}
+# the logistic regression model m and dataset alc with predictions are available
+
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# call loss_func to compute the average number of wrong predictions in the (training) data
+loss_func(class = alc$high_use, prob = alc$probability)
+# kun prob = 0, kuinka usein väärässä
+# kun prob = 1, kuinka usein oikeassa
+# kun prob= alc$probability
+
+```
+
+The training error is 19,6 %, and this is implies that the model predicts roughly 20% of the true values wrong. 
+
+7. 
+
+```{r}
+# the logistic regression model m and dataset alc (with predictions) are available
+
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# compute the average number of wrong predictions in the (training) data
+loss_func(class = alc$high_use, prob = alc$probability)
+
+# 10-fold cross-validation
+library(boot)
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = m, K = 10)
+
+# average number of wrong predictions in the cross validation
+cv$delta[1]
+```
+
+The average number of wrong predictions in the training data is 19,6 %. The average number of wrong predction in the 10-fold cross-validation is 0.209, and this is clearly lower than in the model introducted in data camp (with 0.26 error). 
+
+8.
+
+I create a model with all variables (excluding alcohol use and high use) on the dataset.
+
+
+```{r}
+
+m <- glm(high_use ~  school +     sex +        age +        address +   famsize +    Pstatus  + Medu +       Fedu +       Mjob + Fjob +       reason +     nursery +    internet   + guardian + traveltime + studytime + failures + schoolsup + 
+famsup +    paid +      activities + higher + romantic + famrel + freetime+ goout+ Dalc+ Walc +       health + absences + G1 + G2 +  G3  , data = alc, family = "binomial")
+
+# predict() the probability of high_use
+probabilities <- predict(m, type = "response")
+
+# add the predicted probabilities to 'alc'
+alc <- mutate(alc, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = probability > 0.5)
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+summary(alc$high_use)
+
+# the logistic regression model m and dataset alc with predictions are available
+
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# call loss_func to compute the average number of wrong predictions in the (training) data
+loss_func(class = alc$high_use, prob = alc$probability)
+# kun prob = 0, kuinka usein väärässä
+# kun prob = 1, kuinka usein oikeassa
+# kun prob= alc$probability
+
+```
+
+```{r}
+# initialize a plot of 'high_use' versus 'probability' in 'alc'
+g <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))
+
+# define the geom as points and draw the plot
+g + geom_point()
+```
+
+With this model, there is no errors in predictions, since all data is fitted to the model. The training error is zero. Let's put more variables the previous model with four variables, and add age, studytime, medu, fedu, mjob, fjob and G1, G2 and G3:
+
+```{r}
+m <- glm(high_use ~   famrel +age + goout + absences + sex +G1 + G2 + G3 +Medu + studytime +      Fedu +       Mjob + Fjob      , data = alc, family = "binomial")
+
+# predict() the probability of high_use
+probabilities <- predict(m, type = "response")
+
+# add the predicted probabilities to 'alc'
+alc <- mutate(alc, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = probability > 0.5)
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+summary(alc$high_use)
+
+# the logistic regression model m and dataset alc with predictions are available
+
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# call loss_func to compute the average number of wrong predictions in the (training) data
+loss_func(class = alc$high_use, prob = alc$probability)
+# kun prob = 0, kuinka usein väärässä
+# kun prob = 1, kuinka usein oikeassa
+# kun prob= alc$probability
+```
+
+```{r}
+# initialize a plot of 'high_use' versus 'probability' in 'alc'
+g <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))
+
+# define the geom as points and draw the plot
+g + geom_point()
+```
+
+The training error is 0.2068063 and the ammount of wrong predictions clearly increases.
+
+Remove G1, G2, G3:
+
+```{r}
+m <- glm(high_use ~   famrel +age + goout + absences + sex +Medu + studytime +      Fedu +       Mjob + Fjob      , data = alc, family = "binomial")
+
+# predict() the probability of high_use
+probabilities <- predict(m, type = "response")
+
+# add the predicted probabilities to 'alc'
+alc <- mutate(alc, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = probability > 0.5)
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+summary(alc$high_use)
+# the logistic regression model m and dataset alc with predictions are available
+
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# call loss_func to compute the average number of wrong predictions in the (training) data
+loss_func(class = alc$high_use, prob = alc$probability)
+# kun prob = 0, kuinka usein väärässä
+# kun prob = 1, kuinka usein oikeassa
+# kun prob= alc$probability
+
+```
+
+
+```{r}
+# initialize a plot of 'high_use' versus 'probability' in 'alc'
+g <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))
+
+# define the geom as points and draw the plot
+g + geom_point()
+```
+
+Removing these variables increased the number of predictions of high use by 2 for people who actually are not high users. The model performs slightly worse than the model with 10 explanotary variables. The training error increases slightly.
+
+Next, remove medu, fedu, mjob, fjob.
+
+```{r}
+m <- glm(high_use ~   famrel +age + goout + absences + sex  + studytime     , data = alc, family = "binomial")
+
+# predict() the probability of high_use
+probabilities <- predict(m, type = "response")
+
+# add the predicted probabilities to 'alc'
+alc <- mutate(alc, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = probability > 0.5)
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+summary(alc$high_use)
+
+# the logistic regression model m and dataset alc with predictions are available
+
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# call loss_func to compute the average number of wrong predictions in the (training) data
+loss_func(class = alc$high_use, prob = alc$probability)
+# kun prob = 0, kuinka usein väärässä
+# kun prob = 1, kuinka usein oikeassa
+# kun prob= alc$probability
+```
+
+```{r}
+# initialize a plot of 'high_use' versus 'probability' in 'alc'
+g <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))
+
+# define the geom as points and draw the plot
+g + geom_point()
+```
+
+Now the model is relatively worse on predicting low use, but it performs better on predicting high use. The training error increases with a very small change.
+
+```{r}
+m <- glm(high_use ~   famrel + absences     , data = alc, family = "binomial")
+
+# predict() the probability of high_use
+probabilities <- predict(m, type = "response")
+
+# add the predicted probabilities to 'alc'
+alc <- mutate(alc, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = probability > 0.5)
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+summary(alc$high_use)
+
+# the logistic regression model m and dataset alc with predictions are available
+
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# call loss_func to compute the average number of wrong predictions in the (training) data
+loss_func(class = alc$high_use, prob = alc$probability)
+# kun prob = 0, kuinka usein väärässä
+# kun prob = 1, kuinka usein oikeassa
+# kun prob= alc$probability
+```
+
+
+```{r}
+# initialize a plot of 'high_use' versus 'probability' in 'alc'
+g <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))
+
+# define the geom as points and draw the plot
+g + geom_point()
+```
+
+The training error increases, and the model clearly yields worse predictions. It seems that removing a couple of variables has a very small change on how accurate the predictions are, unless the number of explanatory variables is very low. 

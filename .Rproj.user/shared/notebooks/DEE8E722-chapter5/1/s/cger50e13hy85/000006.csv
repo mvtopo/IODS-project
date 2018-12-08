@@ -1,0 +1,4 @@
+"0","# Mean again zero. Check how affects the variance"
+"0","# perform principal component analysis (with the SVD method)"
+"0","pca_human <- prcomp(human)"
+"0","biplot(pca_human, choices = 1:2, cex = c(0.6, 1), col = c(""grey40"", ""deeppink2""))"
